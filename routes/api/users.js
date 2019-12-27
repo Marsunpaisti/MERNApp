@@ -2,10 +2,13 @@ const express = require('express');
 const router = express.Router();
 const User = require('../../models/user');
 const jwtAuth = require('../../utils/jwtauth');
-const requireJwtAuth = require('../../utils/authmiddleware');
+const requireAuth = require('../../utils/authmiddleware').requireAuthentication;
+const ensureAdminRole = require('../../utils/authmiddleware').ensureAdminRole;
+const redirectLoggedInUsers = require('../../utils/authmiddleware')
+	.redirectLoggedInUsers;
 
 //Get all items
-router.get('/', requireJwtAuth, (req, res) => {
+router.get('/', requireAuth, (req, res) => {
 	User.find()
 		.sort({ email: 1 })
 		.then(items => {
@@ -17,7 +20,7 @@ router.get('/', requireJwtAuth, (req, res) => {
 });
 
 //Get a single item
-router.get('/:id', requireJwtAuth, (req, res) => {
+router.get('/:id', requireAuth, (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(user => {
 			res.json(user);
@@ -28,10 +31,11 @@ router.get('/:id', requireJwtAuth, (req, res) => {
 });
 
 //Add item
-router.post('/add', requireJwtAuth, (req, res) => {
+router.post('/add', ensureAdminRole, (req, res) => {
 	let newUser = new User({
 		email: req.body.email,
-		password: req.body.password
+		password: req.body.password,
+		userType: 'user'
 	});
 
 	newUser
@@ -45,7 +49,7 @@ router.post('/add', requireJwtAuth, (req, res) => {
 });
 
 //Update item
-router.post('update/:id', requireJwtAuth, (req, res) => {
+router.post('/update/:id', ensureAdminRole, (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(result => {
 			if (result) {
@@ -70,29 +74,64 @@ router.post('update/:id', requireJwtAuth, (req, res) => {
 });
 
 //Delete item
-router.post('/delete/:id', requireJwtAuth, (req, res) => {
+router.post('/delete/:id', ensureAdminRole, (req, res) => {
 	User.deleteOne({ _id: req.params.id })
 		.then(() => {
-			res.json({ success: true });
+			res.json({ ok: true });
 		})
 		.catch(err => {
 			res.json(err);
 		});
 });
 
-router.post('/login', (req, res) => {
-	let email = req.body.user.toLowerCase();
-	let password = req.body.password;
+router.post('/login', redirectLoggedInUsers, (req, res) => {
+	let email = null;
+	let password = null;
+	if (req.body && req.body.user && req.body.password) {
+		email = req.body.user.toLowerCase();
+		password = req.body.password;
+	}
 	if (email && password) {
 		User.findOne({ email })
 			.then(user => {
-				let token = generateAuthorizationToken(user);
-				res.setHeader('Set-Cookie', `token=${token}; HttpOnly`);
-				res.json({ success: true });
+				if (!user) {
+					res.status(403).json({
+						ok: false,
+						error: {
+							reason: 'User with that email does not exist.',
+							code: 403
+						}
+					});
+				}
+				user.comparePassword(password, (error, isCorrectPassword) => {
+					if (isCorrectPassword) {
+						let token = generateAuthorizationToken(user);
+						res.setHeader('Set-Cookie', `token=${token}; HttpOnly`);
+						res.json({ ok: true });
+						console.log('Issued user with auth token');
+						console.log(jwtAuth.verifyJWTToken(token));
+					} else {
+						res.status(403).json({
+							ok: false,
+							error: {
+								reason: 'Incorrect password',
+								code: 403
+							}
+						});
+					}
+				});
 			})
 			.catch(err => {
 				res.json(err);
 			});
+	} else {
+		res.status(400).json({
+			ok: false,
+			error: {
+				reason: 'Missing username or password',
+				code: 400
+			}
+		});
 	}
 });
 
