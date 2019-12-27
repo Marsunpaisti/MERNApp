@@ -96,7 +96,7 @@ router.post('/login', (req, res) => {
 	}
 });
 
-const generateLoginToken = user => {
+const generateAuthorizationToken = user => {
 	return jwtAuth.generateJWTToken({
 		uid: user._id,
 		userType: user.userType
