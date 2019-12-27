@@ -36,6 +36,7 @@ const UserSchema = new Schema({
 
 UserSchema.pre('save', function(next) {
 	var user = this;
+	user.email = user.email.toLowerCase();
 
 	// Only hash if password was modified
 	if (!user.isModified('password')) return next();

@@ -80,11 +80,27 @@ router.post('/delete/:id', requireJwtAuth, (req, res) => {
 		});
 });
 
-router.post('/login/:id', (req, res) => {
-	let token = jwtAuth.generateJWTToken({
-		uid: req.params.id
-	});
-	res.json({ token });
+router.post('/login', (req, res) => {
+	let email = req.body.user.toLowerCase();
+	let password = req.body.password;
+	if (email && password) {
+		User.findOne({ email })
+			.then(user => {
+				let token = generateAuthorizationToken(user);
+				res.setHeader('Set-Cookie', `token=${token}; HttpOnly`);
+				res.json({ success: true });
+			})
+			.catch(err => {
+				res.json(err);
+			});
+	}
 });
+
+const generateLoginToken = user => {
+	return jwtAuth.generateJWTToken({
+		uid: user._id,
+		userType: user.userType
+	});
+};
 
 module.exports = router;
