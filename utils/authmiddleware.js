@@ -12,7 +12,7 @@ module.exports = {
 			return res.status(401).json({
 				ok: false,
 				error: {
-					reason: 'Missing authorization cookie',
+					reason: 'Missing token cookie',
 					code: 401
 				}
 			});
@@ -44,7 +44,7 @@ module.exports = {
 			return res.status(401).json({
 				ok: false,
 				error: {
-					reason: 'Missing authorization cookie',
+					reason: 'Missing token cookie',
 					code: 401
 				}
 			});
