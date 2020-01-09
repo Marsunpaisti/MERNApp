@@ -1,110 +1,109 @@
-const jwtAuth = require('./jwtauth');
+const jwtAuth = require("./jwtauth");
 
 module.exports = {
-	requireAuthentication: (req, res, next) => {
-		let token = null;
-		if (req.cookies) {
-			token = req.cookies.token;
-		}
+	requireAuthentication: requireSession,
+	requireMinimumRole: requireMinimumRole,
+	redirectLoggedInUsers: redirectLoggedInUsers,
+	rejectLoggedInUsers: rejectLoggedInUsers
+};
 
-		//Require authorization header to exist
-		if (!token) {
-			return res.status(401).json({
-				ok: false,
-				error: {
-					reason: 'Missing token cookie',
-					code: 401
-				}
-			});
-		}
+function rejectLoggedInUsers(req, res, next) {
+	let token = null;
+	if (req.cookies) {
+		token = req.cookies.token;
+	}
 
-		//Require token to be valid
-		let secretData = jwtAuth.verifyJWTToken(token);
-		if (!secretData) {
-			return res.status(401).json({
-				ok: false,
-				error: {
-					reason: 'Invalid session token',
-					code: 401
-				}
-			});
-		}
+	if (!token){
+		return next();
+	}
 
-		req.session = secretData;
-		next();
-	},
-	ensureAdminRole: (req, res, next) => {
-		let token = null;
-		if (req.cookies) {
-			token = req.cookies.token;
-		}
-
-		//Require authorization header to exist
-		if (!token) {
-			return res.status(401).json({
-				ok: false,
-				error: {
-					reason: 'Missing token cookie',
-					code: 401
-				}
-			});
-		}
-
-		//Require token to be valid
-		let secretData = jwtAuth.verifyJWTToken(token);
-		if (!secretData) {
-			return res.status(401).json({
-				ok: false,
-				error: {
-					reason: 'Invalid session token',
-					code: 401
-				}
-			});
-		}
-
-		req.session = secretData;
-
-		if (!req.session.userType === 'admin') {
-			return res.status(403).json({
-				ok: false,
-				error: {
-					reason: 'Insufficient user access rights',
-					code: 403
-				}
-			});
-		}
-
-		next();
-	},
-	redirectLoggedInUsers: (req, res, next) => {
-		let token = null;
-		if (req.cookies) {
-			token = req.cookies.token;
-		}
-
-		//Require authorization header to exist
-		if (token) {
-			return res.status(400).json({
-				ok: false,
-				error: {
-					reason: 'Already logged in',
-					code: 400
-				}
-			});
-		}
-
-		let secretData = jwtAuth.verifyJWTToken(token);
-		if (!secretData) {
-			return next();
-		}
-
-		req.session = secretData;
-		return res.status(400).json({
+	let secretData = jwtAuth.verifyJWTToken(token);
+	if (secretData) {
+		return res.status(401).json({
 			ok: false,
 			error: {
-				reason: 'Already logged in',
+				reason: "Already logged in",
 				code: 400
 			}
 		});
 	}
-};
+	
+	return next();
+}
+
+function redirectLoggedInUsers(url) {
+	return (
+		redirectLoggedInUsers[url] ||
+		(redirectLoggedInUsers[url] = function(req, res, next) {
+			let token = null;
+			if (req.cookies) {
+				token = req.cookies.token;
+			}
+
+			let secretData = jwtAuth.verifyJWTToken(token);
+			if (secretData) {
+				res.redirect(url);
+			}
+			return next();
+		})
+	);
+}
+
+function requireSession(req, res, next) {
+	let token = null;
+	if (req.cookies) {
+		token = req.cookies.token;
+	}
+
+	//Require authorization header to exist
+	if (!token) {
+		return res.status(401).json({
+			ok: false,
+			error: {
+				reason: "Missing token cookie",
+				code: 401
+			}
+		});
+	}
+
+	//Require token to be valid
+	let secretData = jwtAuth.verifyJWTToken(token);
+	if (!secretData) {
+		return res.status(401).json({
+			ok: false,
+			error: {
+				reason: "Invalid session token",
+				code: 401
+			}
+		});
+	}
+
+	req.session = secretData;
+	next();
+}
+
+const roles = Object.freeze({
+	user: 0,
+	admin: 1
+});
+
+function requireMinimumRole(role) {
+	role = role.toLowerCase();
+	return (
+		requireMinimumRole[role] ||
+		(requireMinimumRole[role] = function(req, res, next) {
+			requireSession(req, res, function() {
+				if (!req.session || roles[req.token.role] < roles[role]) {
+					return res.status(403).json({
+						ok: false,
+						error: {
+							reason: "Access denied",
+							code: 403
+						}
+					});
+				}
+				return next();
+			});
+		})
+	);
+}

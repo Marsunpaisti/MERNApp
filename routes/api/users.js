@@ -2,13 +2,10 @@ const express = require('express');
 const router = express.Router();
 const User = require('../../models/user');
 const jwtAuth = require('../../utils/jwtauth');
-const requireAuth = require('../../utils/authmiddleware').requireAuthentication;
-const ensureAdminRole = require('../../utils/authmiddleware').ensureAdminRole;
-const redirectLoggedInUsers = require('../../utils/authmiddleware')
-	.redirectLoggedInUsers;
+const auth = require('../../utils/authmiddleware')
 
 //Get all items
-router.get('/', requireAuth, (req, res) => {
+router.get('/', auth.requireMinimumRole("user"), (req, res) => {
 	User.find()
 		.sort({ email: 1 })
 		.then(items => {
@@ -20,7 +17,7 @@ router.get('/', requireAuth, (req, res) => {
 });
 
 //Get a single item
-router.get('/:id', requireAuth, (req, res) => {
+router.get('/:id', auth.requireMinimumRole("user"), (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(user => {
 			res.json(user);
@@ -31,7 +28,7 @@ router.get('/:id', requireAuth, (req, res) => {
 });
 
 //Add item
-router.post('/add', ensureAdminRole, (req, res) => {
+router.post('/add', auth.requireMinimumRole("admin"), (req, res) => {
 	let newUser = new User({
 		email: req.body.email,
 		password: req.body.password,
@@ -49,7 +46,7 @@ router.post('/add', ensureAdminRole, (req, res) => {
 });
 
 //Update item
-router.post('/update/:id', ensureAdminRole, (req, res) => {
+router.post('/update/:id', auth.requireMinimumRole("admin"), (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(result => {
 			if (result) {
@@ -74,7 +71,7 @@ router.post('/update/:id', ensureAdminRole, (req, res) => {
 });
 
 //Delete item
-router.post('/delete/:id', ensureAdminRole, (req, res) => {
+router.post('/delete/:id', auth.requireMinimumRole("admin"), (req, res) => {
 	User.deleteOne({ _id: req.params.id })
 		.then(() => {
 			res.json({ ok: true });
@@ -84,9 +81,10 @@ router.post('/delete/:id', ensureAdminRole, (req, res) => {
 		});
 });
 
-router.post('/login', redirectLoggedInUsers, (req, res) => {
+router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 	let email = null;
 	let password = null;
+	
 	if (req.body && req.body.user && req.body.password) {
 		email = req.body.user.toLowerCase();
 		password = req.body.password;
@@ -95,7 +93,7 @@ router.post('/login', redirectLoggedInUsers, (req, res) => {
 		User.findOne({ email })
 			.then(user => {
 				if (!user) {
-					res.status(403).json({
+					return res.status(403).json({
 						ok: false,
 						error: {
 							reason: 'User with that email does not exist.',
@@ -125,7 +123,7 @@ router.post('/login', redirectLoggedInUsers, (req, res) => {
 				res.json(err);
 			});
 	} else {
-		res.status(400).json({
+		return res.status(400).json({
 			ok: false,
 			error: {
 				reason: 'Missing username or password',
