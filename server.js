@@ -6,6 +6,7 @@ const users = require('./routes/api/users');
 const requireJwtAuth = require('./utils/authmiddleware');
 const cookieParser = require('cookie-parser');
 const User = require('./models/user');
+const helmet = require("helmet");
 
 const app = express();
 
@@ -15,6 +16,7 @@ dotenv.config();
 //Express included body-parser
 app.use(express.json());
 app.use(cookieParser());
+app.use(helmet());
 
 //Routes
 app.use('/api/users/', users);
