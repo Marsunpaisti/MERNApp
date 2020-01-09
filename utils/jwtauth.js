@@ -12,7 +12,7 @@ module.exports = {
 			return jwt.verify(jwtToken, process.env.JWT_SECRET_KEY);
 		} catch (e) {
 			//TODO: smarter error handling, use promises
-			console.log('e:', e);
+			console.log(e);
 			return null;
 		}
 	}

@@ -85,8 +85,8 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 	let email = null;
 	let password = null;
 
-	if (req.body && req.body.user && req.body.password) {
-		email = req.body.user.toLowerCase();
+	if (req.body && req.body.email && req.body.password) {
+		email = req.body.email.toLowerCase();
 		password = req.body.password;
 	}
 	if (email && password) {
@@ -106,8 +106,6 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 						let token = generateAuthorizationToken(user);
 						res.setHeader('Set-Cookie', `token=${token}; HttpOnly`);
 						res.json({ ok: true });
-						console.log('Issued user with auth token');
-						console.log(jwtAuth.verifyJWTToken(token));
 					} else {
 						res.status(403).json({
 							ok: false,
