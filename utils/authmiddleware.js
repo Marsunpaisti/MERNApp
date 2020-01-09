@@ -22,12 +22,12 @@ function rejectLoggedInUsers(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				reason: "Already logged in",
+				message: "Already logged in",
 				code: 400
 			}
 		});
 	}
-	
+
 	return next();
 }
 
@@ -60,7 +60,7 @@ function requireSession(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				reason: "Missing token cookie",
+				message: "Missing token cookie",
 				code: 401
 			}
 		});
@@ -72,7 +72,7 @@ function requireSession(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				reason: "Invalid session token",
+				message: "Invalid session token",
 				code: 401
 			}
 		});
@@ -93,11 +93,11 @@ function requireMinimumRole(role) {
 		requireMinimumRole[role] ||
 		(requireMinimumRole[role] = function(req, res, next) {
 			requireSession(req, res, function() {
-				if (!req.session || roles[req.token.role] < roles[role]) {
+				if (!req.session || roles[req.session.userType] < roles[role]) {
 					return res.status(403).json({
 						ok: false,
 						error: {
-							reason: "Access denied",
+							message: "Access denied",
 							code: 403
 						}
 					});

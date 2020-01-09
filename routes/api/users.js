@@ -12,7 +12,7 @@ router.get('/', auth.requireMinimumRole("user"), (req, res) => {
 			res.json(items);
 		})
 		.catch(err => {
-			res.json(err);
+			res.json({ok: false, error: err});
 		});
 });
 
@@ -23,7 +23,7 @@ router.get('/:id', auth.requireMinimumRole("user"), (req, res) => {
 			res.json(user);
 		})
 		.catch(err => {
-			res.json(err);
+			res.json({ok: false, error: err});
 		});
 });
 
@@ -41,7 +41,7 @@ router.post('/add', auth.requireMinimumRole("admin"), (req, res) => {
 			res.json(newUser);
 		})
 		.catch(err => {
-			res.json(err);
+			res.json({ok: false, error: err});
 		});
 });
 
@@ -57,7 +57,7 @@ router.post('/update/:id', auth.requireMinimumRole("admin"), (req, res) => {
 						res.json(updated);
 					})
 					.catch(err => {
-						res.json(err);
+						res.json({ok: false, error: err});
 					});
 			} else {
 				res.json(
@@ -66,7 +66,7 @@ router.post('/update/:id', auth.requireMinimumRole("admin"), (req, res) => {
 			}
 		})
 		.catch(err => {
-			res.json(err);
+			res.json({ok: false, error: err});
 		});
 });
 
@@ -77,14 +77,14 @@ router.post('/delete/:id', auth.requireMinimumRole("admin"), (req, res) => {
 			res.json({ ok: true });
 		})
 		.catch(err => {
-			res.json(err);
+			res.json({ok: false, error: err});
 		});
 });
 
 router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 	let email = null;
 	let password = null;
-	
+
 	if (req.body && req.body.user && req.body.password) {
 		email = req.body.user.toLowerCase();
 		password = req.body.password;
@@ -96,7 +96,7 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 					return res.status(403).json({
 						ok: false,
 						error: {
-							reason: 'User with that email does not exist.',
+							message: 'User with that email does not exist.',
 							code: 403
 						}
 					});
@@ -112,7 +112,7 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 						res.status(403).json({
 							ok: false,
 							error: {
-								reason: 'Incorrect password',
+								message: 'Incorrect password',
 								code: 403
 							}
 						});
@@ -120,13 +120,13 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 				});
 			})
 			.catch(err => {
-				res.json(err);
+				res.json({ok: false, error: err});
 			});
 	} else {
 		return res.status(400).json({
 			ok: false,
 			error: {
-				reason: 'Missing username or password',
+				message: 'Missing username or password',
 				code: 400
 			}
 		});
