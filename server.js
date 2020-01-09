@@ -13,7 +13,7 @@ const app = express();
 //Read .env file
 dotenv.config();
 
-//Express included body-parser
+//Middlewares
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
