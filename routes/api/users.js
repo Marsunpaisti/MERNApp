@@ -2,33 +2,33 @@ const express = require('express');
 const router = express.Router();
 const User = require('../../models/user');
 const jwtAuth = require('../../utils/jwtauth');
-const auth = require('../../utils/authmiddleware')
+const auth = require('../../utils/authmiddleware');
 
 //Get all items
-router.get('/', auth.requireMinimumRole("user"), (req, res) => {
+router.get('/', auth.requireMinimumRole('user'), (req, res) => {
 	User.find()
 		.sort({ email: 1 })
 		.then(items => {
 			res.json(items);
 		})
 		.catch(err => {
-			res.json({ok: false, error: err});
+			res.json({ ok: false, error: err });
 		});
 });
 
 //Get a single item
-router.get('/:id', auth.requireMinimumRole("user"), (req, res) => {
+router.get('/:id', auth.requireMinimumRole('user'), (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(user => {
 			res.json(user);
 		})
 		.catch(err => {
-			res.json({ok: false, error: err});
+			res.json({ ok: false, error: err });
 		});
 });
 
 //Add item
-router.post('/add', auth.requireMinimumRole("admin"), (req, res) => {
+router.post('/add', auth.requireMinimumRole('admin'), (req, res) => {
 	let newUser = new User({
 		email: req.body.email,
 		password: req.body.password,
@@ -41,12 +41,12 @@ router.post('/add', auth.requireMinimumRole("admin"), (req, res) => {
 			res.json(newUser);
 		})
 		.catch(err => {
-			res.json({ok: false, error: err});
+			res.json({ ok: false, error: err });
 		});
 });
 
 //Update item
-router.post('/update/:id', auth.requireMinimumRole("admin"), (req, res) => {
+router.post('/update/:id', auth.requireMinimumRole('admin'), (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(result => {
 			if (result) {
@@ -57,27 +57,27 @@ router.post('/update/:id', auth.requireMinimumRole("admin"), (req, res) => {
 						res.json(updated);
 					})
 					.catch(err => {
-						res.json({ok: false, error: err});
+						res.json({ ok: false, error: err });
 					});
 			} else {
 				res.json(
-					new Error('Couldn not find an object with id ' + req.params.id)
+					new Error('Could not find an object with id ' + req.params.id)
 				);
 			}
 		})
 		.catch(err => {
-			res.json({ok: false, error: err});
+			res.json({ ok: false, error: err });
 		});
 });
 
 //Delete item
-router.post('/delete/:id', auth.requireMinimumRole("admin"), (req, res) => {
+router.post('/delete/:id', auth.requireMinimumRole('admin'), (req, res) => {
 	User.deleteOne({ _id: req.params.id })
 		.then(() => {
 			res.json({ ok: true });
 		})
 		.catch(err => {
-			res.json({ok: false, error: err});
+			res.json({ ok: false, error: err });
 		});
 });
 
@@ -104,7 +104,11 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 				user.comparePassword(password, (error, isCorrectPassword) => {
 					if (isCorrectPassword) {
 						let token = generateAuthorizationToken(user);
-						res.setHeader('Set-Cookie', `token=${token}; HttpOnly`);
+						//Send cookie and set to max-age to 3 hours
+						res.setHeader(
+							'Set-Cookie',
+							`token=${token};max-age=10800;HttpOnly`
+						);
 						res.json({ ok: true });
 					} else {
 						res.status(403).json({
@@ -118,7 +122,7 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 				});
 			})
 			.catch(err => {
-				res.json({ok: false, error: err});
+				res.json({ ok: false, error: err });
 			});
 	} else {
 		return res.status(400).json({

@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 module.exports = {
 	generateJWTToken: secureData => {
 		return jwt.sign(secureData, process.env.JWT_SECRET_KEY, {
-			expiresIn: 1000 * 60 * 60 * 6 //6 hours
+			expiresIn: 1000 * 60 * 60 * 3 //3 hours
 		});
 	},
 
