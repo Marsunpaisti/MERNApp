@@ -1,7 +1,7 @@
-const jwtAuth = require("./jwtauth");
+const jwtAuth = require('./jwtauth');
 
 module.exports = {
-	requireAuthentication: requireSession,
+	requireSession: requireSession,
 	requireMinimumRole: requireMinimumRole,
 	redirectLoggedInUsers: redirectLoggedInUsers,
 	rejectLoggedInUsers: rejectLoggedInUsers
@@ -13,7 +13,7 @@ function rejectLoggedInUsers(req, res, next) {
 		token = req.cookies.token;
 	}
 
-	if (!token){
+	if (!token) {
 		return next();
 	}
 
@@ -22,7 +22,7 @@ function rejectLoggedInUsers(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				message: "Already logged in",
+				message: 'Already logged in',
 				code: 400
 			}
 		});
@@ -60,7 +60,7 @@ function requireSession(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				message: "Missing token cookie",
+				message: 'Missing token cookie',
 				code: 401
 			}
 		});
@@ -72,7 +72,7 @@ function requireSession(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				message: "Invalid session token",
+				message: 'Invalid session token',
 				code: 401
 			}
 		});
@@ -97,7 +97,7 @@ function requireMinimumRole(role) {
 					return res.status(403).json({
 						ok: false,
 						error: {
-							message: "Access denied",
+							message: 'Access denied',
 							code: 403
 						}
 					});

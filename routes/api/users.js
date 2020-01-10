@@ -27,6 +27,17 @@ router.get('/:id', auth.requireMinimumRole('user'), (req, res) => {
 		});
 });
 
+//Get currently logged in user
+router.get('/me', auth.requireSession, (req, res) => {
+	User.findOne({ _id: req.session.uid })
+		.then(user => {
+			res.json(user);
+		})
+		.catch(err => {
+			res.json({ ok: false, error: err });
+		});
+});
+
 //Add item
 router.post('/add', auth.requireMinimumRole('admin'), (req, res) => {
 	let newUser = new User({
