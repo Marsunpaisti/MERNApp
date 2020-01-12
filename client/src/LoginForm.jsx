@@ -13,11 +13,14 @@ function LoginForm() {
 	const [message, setMessage] = useState();
 	const { authCtx, setAuthCtx } = useContext(AuthContext);
 
-	useEffect(() => {
-		console.log("AuthContext changed");
-		console.log(authCtx);
-	}, [authCtx]);
+	/**
+	 * Fires a re-render whenever context changes
+	 */
+	useEffect(() => {}, [authCtx]);
 
+	/**
+	 * Posts the form data to login API and saves the authorization response to context (and receives the jwt cookie the server sends)
+	 */
 	const onLoginClick = () => {
 		setLoading(true);
 		axios
@@ -28,11 +31,12 @@ function LoginForm() {
 			.then(res => {
 				if (res.data.ok) {
 					setMessage("Logged in successfully!");
-					setAuthCtx({ token: res.data.token, user: res.data.user });
+					setAuthCtx({ user: res.data.user });
 				} else {
 					if (res && res.data && res.data.error && res.data.error.message) setMessage(res.data.error.message);
 				}
 				setTimeout(() => {
+					//TODO REMOVE FAKE LOADING
 					setLoading(false);
 				}, 2000);
 			})
@@ -40,6 +44,7 @@ function LoginForm() {
 				if (e.response && e.response.data && e.response.data.error && e.response.data.error.message)
 					setMessage(e.response.data.error.message);
 				setTimeout(() => {
+					//TODO REMOVE FAKE LOADING
 					setLoading(false);
 				}, 2000);
 			});

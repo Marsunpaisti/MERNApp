@@ -10,7 +10,7 @@ const User = require("./models/user");
 const Counter = require("./models/counter");
 const helmet = require("helmet");
 const csurf = require("csurf");
-
+const { tokenParser } = require("./utils/authmiddleware");
 const app = express();
 
 //Read .env file
@@ -26,6 +26,7 @@ app.use(
 		maxAge: 60 * 60 * 6 //6 Hours
 	})
 );
+app.use(tokenParser);
 
 //Routes
 app.use("/api/users/", users);

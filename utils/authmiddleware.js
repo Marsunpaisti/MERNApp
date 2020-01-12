@@ -4,8 +4,32 @@ module.exports = {
 	requireSession: requireSession,
 	requireMinimumRole: requireMinimumRole,
 	redirectLoggedInUsers: redirectLoggedInUsers,
-	rejectLoggedInUsers: rejectLoggedInUsers
+	rejectLoggedInUsers: rejectLoggedInUsers,
+	tokenParser: tokenParser
 };
+
+/** 
+ Parses request JWT tokens into req.session if valid
+ */
+function tokenParser(req, res, next) {
+	let token = null;
+	if (req.cookies && req.cookies.token) {
+		token = req.cookies.token;
+	}
+
+	//Require authorization header to exist
+	if (!token) {
+		return next();
+	}
+
+	//Require token to be valid
+	let secureData = jwtAuth.verifyJWTToken(token);
+	if (secureData) {
+		req.session = secureData;
+	}
+
+	next();
+}
 
 /** 
  Rejects users that are logged in from accessing the route
@@ -20,8 +44,8 @@ function rejectLoggedInUsers(req, res, next) {
 		return next();
 	}
 
-	let secretData = jwtAuth.verifyJWTToken(token);
-	if (secretData) {
+	let secureData = jwtAuth.verifyJWTToken(token);
+	if (secureData) {
 		return res.status(401).json({
 			ok: false,
 			error: {
@@ -46,8 +70,8 @@ function redirectLoggedInUsers(url) {
 				token = req.cookies.token;
 			}
 
-			let secretData = jwtAuth.verifyJWTToken(token);
-			if (secretData) {
+			let secureData = jwtAuth.verifyJWTToken(token);
+			if (secureData) {
 				res.redirect(url);
 			}
 			return next();
@@ -59,6 +83,7 @@ function redirectLoggedInUsers(url) {
  Requires that user has a valid JWT authorization token and stores it into req.session
  */
 function requireSession(req, res, next) {
+	console.log("Requiresession");
 	let token = null;
 	if (req.cookies) {
 		token = req.cookies.token;
@@ -76,8 +101,8 @@ function requireSession(req, res, next) {
 	}
 
 	//Require token to be valid
-	let secretData = jwtAuth.verifyJWTToken(token);
-	if (!secretData) {
+	let secureData = jwtAuth.verifyJWTToken(token);
+	if (!secureData) {
 		return res.status(401).json({
 			ok: false,
 			error: {
@@ -87,7 +112,7 @@ function requireSession(req, res, next) {
 		});
 	}
 
-	req.session = secretData;
+	req.session = secureData;
 	next();
 }
 

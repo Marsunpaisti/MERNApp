@@ -7,7 +7,8 @@ const auth = require("../../utils/authmiddleware");
 /** 
  List all users
  */
-router.get("/", auth.requireMinimumRole("admin"), (req, res) => {
+router.get("/", (req, res) => {
+	console.log("PENIS");
 	User.find()
 		.sort({ email: 1 })
 		.then(items => {
@@ -21,7 +22,8 @@ router.get("/", auth.requireMinimumRole("admin"), (req, res) => {
 /** 
  Gets a single user with given id
  */
-router.get("/:id", auth.requireMinimumRole("admin"), (req, res) => {
+/*
+router.get("/:id", (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(user => {
 			res.json(user);
@@ -30,22 +32,27 @@ router.get("/:id", auth.requireMinimumRole("admin"), (req, res) => {
 			res.json({ ok: false, error: err });
 		});
 });
+*/
 
 //Get currently logged in user
-router.get("/me", auth.requireSession, (req, res) => {
-	User.findOne({ _id: req.session.uid })
-		.then(user => {
-			res.json({ ok: true, user: user.email });
-		})
-		.catch(err => {
-			res.json({ ok: false, error: err });
-		});
+router.get("/me", (req, res) => {
+	if (req.session) {
+		User.findOne({ _id: req.session.uid })
+			.then(user => {
+				res.json({ ok: true, email: user.email });
+			})
+			.catch(err => {
+				res.json({ ok: false, error: err });
+			});
+	} else {
+		res.json({ ok: false, error: { message: "No valid session" } });
+	}
 });
 
 /** 
  Add a new user with data from req.body. Cannot create admin users
  */
-router.post("/add", auth.requireMinimumRole("admin"), (req, res) => {
+router.post("/add", (req, res) => {
 	let newUser = new User({
 		email: req.body.email,
 		password: req.body.password,
@@ -65,7 +72,7 @@ router.post("/add", auth.requireMinimumRole("admin"), (req, res) => {
 /** 
  Update user with given ID with data from req.body
  */
-router.post("/update/:id", auth.requireMinimumRole("admin"), (req, res) => {
+router.post("/update/:id", (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(result => {
 			if (result) {
@@ -90,7 +97,7 @@ router.post("/update/:id", auth.requireMinimumRole("admin"), (req, res) => {
 /** 
  Delete a user with given id
  */
-router.post("/delete/:id", auth.requireMinimumRole("admin"), (req, res) => {
+router.post("/delete/:id", (req, res) => {
 	User.deleteOne({ _id: req.params.id })
 		.then(() => {
 			res.json({ ok: true });
