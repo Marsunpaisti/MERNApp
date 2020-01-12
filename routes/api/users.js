@@ -35,7 +35,7 @@ router.get("/:id", auth.requireMinimumRole("admin"), (req, res) => {
 router.get("/me", auth.requireSession, (req, res) => {
 	User.findOne({ _id: req.session.uid })
 		.then(user => {
-			res.json(user);
+			res.json({ ok: true, user: user.email });
 		})
 		.catch(err => {
 			res.json({ ok: false, error: err });
@@ -128,7 +128,7 @@ router.post("/login", auth.rejectLoggedInUsers, (req, res) => {
 						let token = generateAuthorizationToken(user);
 						//Send cookie and set to max-age to 3 hours
 						res.setHeader("Set-Cookie", `token=${token};max-age=10800;HttpOnly`);
-						res.json({ ok: true });
+						res.json({ ok: true, token: token, user: user.email });
 					} else {
 						res.status(403).json({
 							ok: false,

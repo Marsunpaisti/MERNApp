@@ -1,14 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Button, Form } from "react-bootstrap";
 import "./sass/LoginForm.scss";
 import axios from "axios";
 import { RingLoader } from "react-spinners";
+import AuthContext from "./contexts/AuthContext";
+import { useEffect } from "react";
 
 function LoginForm() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [message, setMessage] = useState();
+	const { authCtx, setAuthCtx } = useContext(AuthContext);
+
+	useEffect(() => {
+		console.log("AuthContext changed");
+		console.log(authCtx);
+	}, [authCtx]);
 
 	const onLoginClick = () => {
 		setLoading(true);
@@ -20,6 +28,7 @@ function LoginForm() {
 			.then(res => {
 				if (res.data.ok) {
 					setMessage("Logged in successfully!");
+					setAuthCtx({ token: res.data.token, user: res.data.user });
 				} else {
 					if (res && res.data && res.data.error && res.data.error.message) setMessage(res.data.error.message);
 				}
