@@ -80,10 +80,10 @@ const createAdminUser = () => {
  Creates the mongoose Counter document to track giveaway button clicks if it does not exist
  */
 const createGiveawayCounter = () => {
-	Counter.findOne({ id: "GIVEAWAY_COUNTER" }).then(result => {
+	Counter.findOne({ id: "giveaway_counter" }).then(result => {
 		if (!result) {
 			let giveawayCounter = new Counter({
-				id: "GIVEAWAY_COUNTER",
+				id: "giveaway_counter",
 				value: 0
 			});
 			giveawayCounter

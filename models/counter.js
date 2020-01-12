@@ -19,7 +19,7 @@ CounterSchema.plugin(uniqueValidator);
 
 CounterSchema.pre("save", function(next) {
 	var counter = this;
-	counter.id = counter.id.toLowercase();
+	counter.id = counter.id.toLowerCase();
 	return next();
 });
 

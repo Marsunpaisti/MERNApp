@@ -4,6 +4,12 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./sass/global.scss";
+import axios from "axios";
+
+axios.defaults.proxy = {
+	host: "http://localhost",
+	port: 5000
+};
 
 ReactDOM.render(<App />, document.getElementById("root"));
 

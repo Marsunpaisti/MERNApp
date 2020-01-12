@@ -9,7 +9,7 @@ function App() {
 			<CSRFGrabber></CSRFGrabber>
 			<div className="container">
 				<div className="row">
-					<div className="column align-self-center center-column">
+					<div className="col-md-6 align-self-center center-column">
 						<LoginForm />
 					</div>
 				</div>
