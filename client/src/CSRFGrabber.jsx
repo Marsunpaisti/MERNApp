@@ -3,8 +3,8 @@ import axios from "axios";
 
 function CSRFGrabber() {
 	useEffect(() => {
-		axios.get("/api/csrf").then(res => {
-			axios.defaults.headers.post["X-XSRF-TOKEN"] = res.data;
+		axios.get("/api/csrf/token").then(res => {
+			axios.defaults.headers.post["XSRF-TOKEN"] = res.data;
 		});
 	});
 	return <></>;
