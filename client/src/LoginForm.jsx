@@ -31,7 +31,7 @@ function LoginForm() {
 			.then(res => {
 				if (res.data.ok) {
 					setMessage("Logged in successfully!");
-					setAuthCtx({ user: res.data.user });
+					setAuthCtx(prevCtx => ({ ...prevCtx, user: res.data.user }));
 				} else {
 					if (res && res.data && res.data.error && res.data.error.message) setMessage(res.data.error.message);
 				}
