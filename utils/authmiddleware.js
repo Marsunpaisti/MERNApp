@@ -1,4 +1,4 @@
-const jwtAuth = require('./jwtauth');
+const jwtAuth = require("./jwtauth");
 
 module.exports = {
 	requireSession: requireSession,
@@ -7,6 +7,9 @@ module.exports = {
 	rejectLoggedInUsers: rejectLoggedInUsers
 };
 
+/** 
+ Rejects users that are logged in from accessing the route
+ */
 function rejectLoggedInUsers(req, res, next) {
 	let token = null;
 	if (req.cookies) {
@@ -22,7 +25,7 @@ function rejectLoggedInUsers(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				message: 'Already logged in',
+				message: "Already logged in",
 				code: 400
 			}
 		});
@@ -31,6 +34,9 @@ function rejectLoggedInUsers(req, res, next) {
 	return next();
 }
 
+/** 
+ Redirects authenticated users to given url
+ */
 function redirectLoggedInUsers(url) {
 	return (
 		redirectLoggedInUsers[url] ||
@@ -49,6 +55,9 @@ function redirectLoggedInUsers(url) {
 	);
 }
 
+/** 
+ Requires that user has a valid JWT authorization token and stores it into req.session
+ */
 function requireSession(req, res, next) {
 	let token = null;
 	if (req.cookies) {
@@ -60,7 +69,7 @@ function requireSession(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				message: 'Missing token cookie',
+				message: "Missing token cookie",
 				code: 401
 			}
 		});
@@ -72,7 +81,7 @@ function requireSession(req, res, next) {
 		return res.status(401).json({
 			ok: false,
 			error: {
-				message: 'Invalid session token',
+				message: "Invalid session token",
 				code: 401
 			}
 		});
@@ -87,6 +96,9 @@ const roles = Object.freeze({
 	admin: 1
 });
 
+/** 
+ Checks that user at least the authorization of a given role
+ */
 function requireMinimumRole(role) {
 	role = role.toLowerCase();
 	return (
@@ -97,7 +109,7 @@ function requireMinimumRole(role) {
 					return res.status(403).json({
 						ok: false,
 						error: {
-							message: 'Access denied',
+							message: "Access denied",
 							code: 403
 						}
 					});

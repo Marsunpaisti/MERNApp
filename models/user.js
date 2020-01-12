@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const uniqueValidator = require('mongoose-unique-validator');
-const validators = require('validator');
-const bcrypt = require('bcrypt-nodejs');
-const saltRounds = require('../config//default').saltRounds;
+const uniqueValidator = require("mongoose-unique-validator");
+const validators = require("validator");
+const bcrypt = require("bcrypt-nodejs");
+const saltRounds = require("../config//default").saltRounds;
 
 const UserSchema = new Schema({
 	email: {
@@ -14,7 +14,7 @@ const UserSchema = new Schema({
 		validate: [
 			{
 				validator: validators.isEmail,
-				msg: 'Please input a valid email address'
+				msg: "Please input a valid email address"
 			}
 		]
 	},
@@ -24,23 +24,26 @@ const UserSchema = new Schema({
 		validate: [
 			{
 				validator: pwd => validators.isLength(pwd, { min: 8, max: undefined }),
-				msg: 'Password must have at least 8 characters'
+				msg: "Password must have at least 8 characters"
 			}
 		]
 	},
 	userType: {
 		type: String,
-		enum: ['user', 'admin'],
-		default: 'user'
+		enum: ["user", "admin"],
+		default: "user"
 	}
 });
 
-UserSchema.pre('save', function(next) {
+/** 
+ Hashes user password and lowercases the emails before saving
+ */
+UserSchema.pre("save", function(next) {
 	var user = this;
 	user.email = user.email.toLowerCase();
 
 	// Only hash if password was modified
-	if (!user.isModified('password')) return next();
+	if (!user.isModified("password")) return next();
 
 	// Generate salt
 	bcrypt.genSalt(saltRounds, function(err, salt) {
@@ -57,6 +60,9 @@ UserSchema.pre('save', function(next) {
 	});
 });
 
+/** 
+ Hashes and compares the given password to the users password in the database
+ */
 UserSchema.methods.comparePassword = function(candidatePassword, callback) {
 	bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
 		if (err) return callback(err);
@@ -66,4 +72,4 @@ UserSchema.methods.comparePassword = function(candidatePassword, callback) {
 
 UserSchema.plugin(uniqueValidator);
 
-module.exports = User = mongoose.model('user', UserSchema);
+module.exports = User = mongoose.model("user", UserSchema);

@@ -7,6 +7,7 @@ const csrf = require("./routes/api/csrf");
 const requireJwtAuth = require("./utils/authmiddleware");
 const cookieParser = require("cookie-parser");
 const User = require("./models/user");
+const Counter = require("./models/counter");
 const helmet = require("helmet");
 const csurf = require("csurf");
 
@@ -43,12 +44,16 @@ mongoose
 		app.listen(port, () => {
 			console.log(`Server started on port ${port}`);
 			createAdminUser();
+			createGiveawayCounter();
 		});
 	})
 	.catch(err => {
 		console.log(err);
 	});
 
+/** 
+ Creates the admin user specified in .env unless a user with admin role exists
+ */
 const createAdminUser = () => {
 	User.findOne({ userType: "admin" }).then(result => {
 		if (!result) {
@@ -67,6 +72,30 @@ const createAdminUser = () => {
 				});
 		} else {
 			console.log("Admin user exists already");
+		}
+	});
+};
+
+/** 
+ Creates the mongoose Counter document to track giveaway button clicks if it does not exist
+ */
+const createGiveawayCounter = () => {
+	Counter.findOne({ id: "GIVEAWAY_COUNTER" }).then(result => {
+		if (!result) {
+			let giveawayCounter = new Counter({
+				id: "GIVEAWAY_COUNTER",
+				value: 0
+			});
+			giveawayCounter
+				.save()
+				.then(() => {
+					console.log("Initialized giveaway counter");
+				})
+				.catch(err => {
+					console.log(err);
+				});
+		} else {
+			console.log("Giveaway counter exists with value " + result.value);
 		}
 	});
 };

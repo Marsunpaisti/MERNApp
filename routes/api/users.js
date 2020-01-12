@@ -1,11 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const User = require('../../models/user');
-const jwtAuth = require('../../utils/jwtauth');
-const auth = require('../../utils/authmiddleware');
+const User = require("../../models/user");
+const jwtAuth = require("../../utils/jwtauth");
+const auth = require("../../utils/authmiddleware");
 
-//Get all items
-router.get('/', auth.requireMinimumRole('user'), (req, res) => {
+/** 
+ List all users
+ */
+router.get("/", auth.requireMinimumRole("admin"), (req, res) => {
 	User.find()
 		.sort({ email: 1 })
 		.then(items => {
@@ -16,8 +18,10 @@ router.get('/', auth.requireMinimumRole('user'), (req, res) => {
 		});
 });
 
-//Get a single item
-router.get('/:id', auth.requireMinimumRole('user'), (req, res) => {
+/** 
+ Gets a single user with given id
+ */
+router.get("/:id", auth.requireMinimumRole("admin"), (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(user => {
 			res.json(user);
@@ -28,7 +32,7 @@ router.get('/:id', auth.requireMinimumRole('user'), (req, res) => {
 });
 
 //Get currently logged in user
-router.get('/me', auth.requireSession, (req, res) => {
+router.get("/me", auth.requireSession, (req, res) => {
 	User.findOne({ _id: req.session.uid })
 		.then(user => {
 			res.json(user);
@@ -38,12 +42,14 @@ router.get('/me', auth.requireSession, (req, res) => {
 		});
 });
 
-//Add item
-router.post('/add', auth.requireMinimumRole('admin'), (req, res) => {
+/** 
+ Add a new user with data from req.body. Cannot create admin users
+ */
+router.post("/add", auth.requireMinimumRole("admin"), (req, res) => {
 	let newUser = new User({
 		email: req.body.email,
 		password: req.body.password,
-		userType: 'user'
+		userType: "user"
 	});
 
 	newUser
@@ -56,8 +62,10 @@ router.post('/add', auth.requireMinimumRole('admin'), (req, res) => {
 		});
 });
 
-//Update item
-router.post('/update/:id', auth.requireMinimumRole('admin'), (req, res) => {
+/** 
+ Update user with given ID with data from req.body
+ */
+router.post("/update/:id", auth.requireMinimumRole("admin"), (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(result => {
 			if (result) {
@@ -71,9 +79,7 @@ router.post('/update/:id', auth.requireMinimumRole('admin'), (req, res) => {
 						res.json({ ok: false, error: err });
 					});
 			} else {
-				res.json(
-					new Error('Could not find an object with id ' + req.params.id)
-				);
+				res.json(new Error("Could not find an object with id " + req.params.id));
 			}
 		})
 		.catch(err => {
@@ -81,8 +87,10 @@ router.post('/update/:id', auth.requireMinimumRole('admin'), (req, res) => {
 		});
 });
 
-//Delete item
-router.post('/delete/:id', auth.requireMinimumRole('admin'), (req, res) => {
+/** 
+ Delete a user with given id
+ */
+router.post("/delete/:id", auth.requireMinimumRole("admin"), (req, res) => {
 	User.deleteOne({ _id: req.params.id })
 		.then(() => {
 			res.json({ ok: true });
@@ -92,7 +100,10 @@ router.post('/delete/:id', auth.requireMinimumRole('admin'), (req, res) => {
 		});
 });
 
-router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
+/** 
+ Handles login POSTS and responds with the JWT cookie on success
+ */
+router.post("/login", auth.rejectLoggedInUsers, (req, res) => {
 	let email = null;
 	let password = null;
 
@@ -107,7 +118,7 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 					return res.status(403).json({
 						ok: false,
 						error: {
-							message: 'User with that email does not exist.',
+							message: "User with that email does not exist.",
 							code: 403
 						}
 					});
@@ -116,16 +127,13 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 					if (isCorrectPassword) {
 						let token = generateAuthorizationToken(user);
 						//Send cookie and set to max-age to 3 hours
-						res.setHeader(
-							'Set-Cookie',
-							`token=${token};max-age=10800;HttpOnly`
-						);
+						res.setHeader("Set-Cookie", `token=${token};max-age=10800;HttpOnly`);
 						res.json({ ok: true });
 					} else {
 						res.status(403).json({
 							ok: false,
 							error: {
-								message: 'Incorrect password',
+								message: "Incorrect password",
 								code: 403
 							}
 						});
@@ -139,13 +147,16 @@ router.post('/login', auth.rejectLoggedInUsers, (req, res) => {
 		return res.status(400).json({
 			ok: false,
 			error: {
-				message: 'Missing username or password',
+				message: "Missing username or password",
 				code: 400
 			}
 		});
 	}
 });
 
+/** 
+ Generates an authorization JWT from a mongoose user document
+ */
 const generateAuthorizationToken = user => {
 	return jwtAuth.generateJWTToken({
 		uid: user._id,
