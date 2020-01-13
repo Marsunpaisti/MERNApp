@@ -4,12 +4,9 @@
 	"description": "MERN Stack test application",
 	"main": "server.js",
 	"scripts": {
-		"start": "node server.js",
-		"server": "nodemon server.js",
-		"install-client": "npm install --prefix client",
+		"server": "node server.js",
 		"start-client": "npm start --prefix client",
-		"start-server": "npm start",
-		"launch": "concurrently \"npm run start-server\" \"npm run start-client\""
+		"launch": "concurrently \"npm run start-client\" \"npm run server\""
 	},
 	"author": "",
 	"license": "ISC",
