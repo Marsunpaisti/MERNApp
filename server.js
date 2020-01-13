@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const config = require("./config/default");
 const users = require("./routes/api/users");
 const csrf = require("./routes/api/csrf");
+const giveaway = require("./routes/api/giveaway");
 const requireJwtAuth = require("./utils/authmiddleware");
 const cookieParser = require("cookie-parser");
 const User = require("./models/user");
@@ -31,6 +32,7 @@ app.use(tokenParser);
 //Routes
 app.use("/api/users/", users);
 app.use("/api/csrf/", csrf);
+app.use("/api/giveaway/", giveaway);
 
 //Establish MongoDB connection
 mongoose
@@ -81,10 +83,10 @@ const createAdminUser = () => {
  Creates the mongoose Counter document to track giveaway button clicks if it does not exist
  */
 const createGiveawayCounter = () => {
-	Counter.findOne({ id: "giveaway_counter" }).then(result => {
+	Counter.findOne({ name: "giveaway_counter" }).then(result => {
 		if (!result) {
 			let giveawayCounter = new Counter({
-				id: "giveaway_counter",
+				name: "giveaway_counter",
 				value: 0
 			});
 			giveawayCounter

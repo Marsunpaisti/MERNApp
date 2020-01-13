@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const uniqueValidator = require("mongoose-unique-validator");
 
 const CounterSchema = new Schema({
-	id: {
+	name: {
 		type: String,
 		required: true,
 		unique: true,
@@ -19,7 +19,7 @@ CounterSchema.plugin(uniqueValidator);
 
 CounterSchema.pre("save", function(next) {
 	var counter = this;
-	counter.id = counter.id.toLowerCase();
+	counter.name = counter.name.toLowerCase();
 	return next();
 });
 

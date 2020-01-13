@@ -12,10 +12,7 @@ function App() {
 
 	useEffect(() => {
 		const checkAuthStatus = () => {
-			if (authCtx.user) return; //Dont fetch if we already have the information
-			//if (!authCtx.csrf) return; //Dont fetch before we have a csrf token
 			console.log("Retrieving authentication info");
-			console.log(authCtx);
 			axios
 				.get("/api/users/me")
 				.then(res => {
@@ -32,9 +29,6 @@ function App() {
 		};
 
 		const getCsrfToken = () => {
-			if (authCtx.csrf) return; //Dont fetch if we already have a csrf token
-			console.log("Retrieving CSRF token");
-			console.log(authCtx);
 			axios.get("/api/csrf/token").then(res => {
 				axios.defaults.headers.post["XSRF-TOKEN"] = res.data;
 				setAuthCtx(prevCtx => ({ ...prevCtx, csrf: res.data }));
@@ -44,7 +38,7 @@ function App() {
 
 		getCsrfToken();
 		checkAuthStatus();
-	}, [authCtx]);
+	});
 
 	return (
 		<>

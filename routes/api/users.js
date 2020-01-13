@@ -7,8 +7,7 @@ const auth = require("../../utils/authmiddleware");
 /** 
  List all users
  */
-router.get("/", (req, res) => {
-	console.log("PENIS");
+router.get("/", auth.requireMinimumRole("admin"), (req, res) => {
 	User.find()
 		.sort({ email: 1 })
 		.then(items => {
@@ -39,7 +38,12 @@ router.get("/me", (req, res) => {
 	if (req.session) {
 		User.findOne({ _id: req.session.uid })
 			.then(user => {
-				res.json({ ok: true, email: user.email });
+				res.json({
+					ok: true,
+					email: user.email,
+					giveAwayPoints: user.giveAwayPoints,
+					giveAwayRolls: user.giveAwayRolls
+				});
 			})
 			.catch(err => {
 				res.json({ ok: false, error: err });
@@ -72,7 +76,7 @@ router.post("/add", (req, res) => {
 /** 
  Update user with given ID with data from req.body
  */
-router.post("/update/:id", (req, res) => {
+router.post("/update/:id", auth.requireMinimumRole("admin"), (req, res) => {
 	User.findOne({ _id: req.params.id })
 		.then(result => {
 			if (result) {
@@ -97,7 +101,7 @@ router.post("/update/:id", (req, res) => {
 /** 
  Delete a user with given id
  */
-router.post("/delete/:id", (req, res) => {
+router.post("/delete/:id", auth.requireMinimumRole("admin"), (req, res) => {
 	User.deleteOne({ _id: req.params.id })
 		.then(() => {
 			res.json({ ok: true });
@@ -134,7 +138,7 @@ router.post("/login", auth.rejectLoggedInUsers, (req, res) => {
 					if (isCorrectPassword) {
 						let token = generateAuthorizationToken(user);
 						//Send cookie and set to max-age to 3 hours
-						res.setHeader("Set-Cookie", `token=${token};max-age=10800;HttpOnly`);
+						res.setHeader("Set-Cookie", `token=${token};max-age=10800;path=/;HttpOnly`);
 						res.json({ ok: true, token: token, user: user.email });
 					} else {
 						res.status(403).json({

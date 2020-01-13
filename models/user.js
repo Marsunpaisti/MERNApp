@@ -32,6 +32,14 @@ const UserSchema = new Schema({
 		type: String,
 		enum: ["user", "admin"],
 		default: "user"
+	},
+	giveAwayRolls: {
+		type: Number,
+		default: 20
+	},
+	giveAwayPoints: {
+		type: Number,
+		default: 0
 	}
 });
 

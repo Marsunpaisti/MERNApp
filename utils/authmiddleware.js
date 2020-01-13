@@ -83,7 +83,6 @@ function redirectLoggedInUsers(url) {
  Requires that user has a valid JWT authorization token and stores it into req.session
  */
 function requireSession(req, res, next) {
-	console.log("Requiresession");
 	let token = null;
 	if (req.cookies) {
 		token = req.cookies.token;
