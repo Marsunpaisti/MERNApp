@@ -7,6 +7,8 @@ MONGOSTRING="mongodb connection string" <br/>
 JWT_SECRET_KEY="LONGEXAMPLESECRETPASSWORD"<br/>
 <br/>
 Then run the following commands: <br/>
-npm install <br/>
-npm run install-client <br/>
-npm run launch<br/>
+npm install (in root folder)<br/>
+cd client <br/>
+npm install (in client folder)<br/>
+cd ..
+npm run launch (in root folder)<br/>
