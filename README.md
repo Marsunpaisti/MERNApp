@@ -10,5 +10,5 @@ Then run the following commands: <br/>
 npm install (in root folder)<br/>
 cd client <br/>
 npm install (in client folder)<br/>
-cd ..
+cd .. <br>
 npm run launch (in root folder)<br/>
