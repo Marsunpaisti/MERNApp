@@ -4,19 +4,13 @@ import "./sass/LoginForm.scss";
 import axios from "axios";
 import { RingLoader } from "react-spinners";
 import AuthContext from "./contexts/AuthContext";
-import { useEffect } from "react";
 
 function LoginForm() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [message, setMessage] = useState();
-	const { authCtx, setAuthCtx } = useContext(AuthContext);
-
-	/**
-	 * Fires a re-render whenever context changes
-	 */
-	useEffect(() => {}, [authCtx]);
+	const { _, setAuthCtx } = useContext(AuthContext);
 
 	/**
 	 * Posts the form data to login API and saves the authorization response to context (and receives the jwt cookie the server sends)
@@ -31,22 +25,25 @@ function LoginForm() {
 			.then(res => {
 				if (res.data.ok) {
 					setMessage("Logged in successfully!");
-					setAuthCtx(prevCtx => ({ ...prevCtx, user: res.data.user }));
+					setAuthCtx(prevCtx => ({
+						...prevCtx,
+						user: res.data.user,
+						giveAwayPoints: res.data.giveAwayPoints,
+						giveAwayRolls: res.data.giveAwayRolls
+					}));
 				} else {
 					if (res && res.data && res.data.error && res.data.error.message) setMessage(res.data.error.message);
 				}
-				setTimeout(() => {
-					//TODO REMOVE FAKE LOADING
-					setLoading(false);
-				}, 2000);
+				setLoading(false);
 			})
 			.catch(e => {
-				if (e.response && e.response.data && e.response.data.error && e.response.data.error.message)
+				console.log(e.response.data);
+				if (e.response && e.response.data && e.response.data.error && e.response.data.error.message) {
 					setMessage(e.response.data.error.message);
-				setTimeout(() => {
-					//TODO REMOVE FAKE LOADING
-					setLoading(false);
-				}, 2000);
+				} else {
+					setMessage(e.response.data);
+				}
+				setLoading(false);
 			});
 	};
 

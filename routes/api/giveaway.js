@@ -21,7 +21,7 @@ router.post("/roll", auth.requireMinimumRole("user"), async (req, res) => {
 	try {
 		//Check that user has giveaway roll attempts left
 		if (user.giveAwayRolls <= 0) {
-			return res.json({
+			return res.status(403).json({
 				ok: false,
 				error: { message: "You have no rolls left!" },
 				giveAwayPoints: user.giveAwayPoints,
@@ -53,8 +53,10 @@ router.post("/roll", auth.requireMinimumRole("user"), async (req, res) => {
 	}
 });
 
+/**
+ * Returns what prize a given counter value gives
+ */
 function checkPrize(counterValue) {
-	console.log("Counter at value " + counterValue);
 	if (counterValue % 500 === 0) {
 		return 250;
 	} else if (counterValue % 100 === 0) {

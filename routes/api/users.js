@@ -18,21 +18,6 @@ router.get("/", auth.requireMinimumRole("admin"), (req, res) => {
 		});
 });
 
-/** 
- Gets a single user with given id
- */
-/*
-router.get("/:id", (req, res) => {
-	User.findOne({ _id: req.params.id })
-		.then(user => {
-			res.json(user);
-		})
-		.catch(err => {
-			res.json({ ok: false, error: err });
-		});
-});
-*/
-
 //Get currently logged in user
 router.get("/me", (req, res) => {
 	if (req.session) {
@@ -139,7 +124,13 @@ router.post("/login", auth.rejectLoggedInUsers, (req, res) => {
 						let token = generateAuthorizationToken(user);
 						//Send cookie and set to max-age to 3 hours
 						res.setHeader("Set-Cookie", `token=${token};max-age=10800;path=/;HttpOnly`);
-						res.json({ ok: true, token: token, user: user.email });
+						res.json({
+							ok: true,
+							token: token,
+							user: user.email,
+							giveAwayPoints: user.giveAwayPoints,
+							giveAwayRolls: user.giveAwayRolls
+						});
 					} else {
 						res.status(403).json({
 							ok: false,

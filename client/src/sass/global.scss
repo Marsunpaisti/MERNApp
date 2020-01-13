@@ -3,3 +3,8 @@
 body {
 	background-color: $COLOR_BACKGROUND_LIGHTBLUE;
 }
+
+.card {
+	padding: 0.5em;
+	background-color: $COLOR_CARD_LIGHTBLUE !important;
+}
