@@ -44,7 +44,11 @@ router.post("/roll", auth.requireMinimumRole("user"), async (req, res) => {
 
 		res.json({
 			ok: true,
-			prizeMessage: "You won " + points + " points!",
+			prizeMessage:
+				(points > 0 ? "You won " + points + " points!" : "No prize this time!") +
+				" Next prize in " +
+				(10 - (newValue % 10)) +
+				" clicks!",
 			giveAwayPoints: user.giveAwayPoints,
 			giveAwayRolls: user.giveAwayRolls
 		});
@@ -61,8 +65,10 @@ function checkPrize(counterValue) {
 		return 250;
 	} else if (counterValue % 100 === 0) {
 		return 40;
-	} else {
+	} else if (counterValue % 10 === 0) {
 		return 5;
+	} else {
+		return 0;
 	}
 }
 
