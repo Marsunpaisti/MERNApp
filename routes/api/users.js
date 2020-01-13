@@ -41,7 +41,7 @@ router.get("/me", (req, res) => {
 /** 
  Add a new user with data from req.body. Cannot create admin users
  */
-router.post("/add", (req, res) => {
+router.post("/register", (req, res) => {
 	let newUser = new User({
 		email: req.body.email,
 		password: req.body.password,
@@ -51,7 +51,14 @@ router.post("/add", (req, res) => {
 	newUser
 		.save()
 		.then(() => {
-			res.json(newUser);
+			let token = generateAuthorizationToken(newUser);
+			res.setHeader("Set-Cookie", `token=${token};max-age=10800;path=/;HttpOnly`);
+			res.json({
+				email: newUser.email,
+				giveAwayPoints: newUser.giveAwayPoints,
+				giveAwayRolls: newUser.giveAwayRolls,
+				token: token
+			});
 		})
 		.catch(err => {
 			res.json({ ok: false, error: err });
@@ -156,8 +163,16 @@ router.post("/login", auth.rejectLoggedInUsers, (req, res) => {
 	}
 });
 
-/** 
- Generates an authorization JWT from a mongoose user document
+/**
+ * Logs out user
+ */
+router.post("/logout", auth.requireSession, (req, res) => {
+	res.setHeader("Set-Cookie", `token=deleted;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;HttpOnly`);
+	return res.json({ ok: true });
+});
+
+/**
+ * Generates an authorization JWT from a mongoose user document
  */
 const generateAuthorizationToken = user => {
 	return jwtAuth.generateJWTToken({

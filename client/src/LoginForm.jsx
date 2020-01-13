@@ -10,7 +10,7 @@ function LoginForm() {
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [message, setMessage] = useState();
-	const { _, setAuthCtx } = useContext(AuthContext);
+	const { authCtx, setAuthCtx } = useContext(AuthContext);
 
 	/**
 	 * Posts the form data to login API and saves the authorization response to context (and receives the jwt cookie the server sends)
@@ -35,6 +35,38 @@ function LoginForm() {
 					if (res && res.data && res.data.error && res.data.error.message) setMessage(res.data.error.message);
 				}
 				setLoading(false);
+			})
+			.catch(e => {
+				console.log(e.response.data);
+				if (e.response && e.response.data && e.response.data.error && e.response.data.error.message) {
+					setMessage(e.response.data.error.message);
+				} else {
+					setMessage(e.response.data);
+				}
+				setLoading(false);
+			});
+	};
+	const onRegisterClick = () => {
+		setLoading(true);
+		axios
+			.post("/api/users/register", {
+				email: email,
+				password: password
+			})
+			.then(res => {
+				setLoading(false);
+				if (res.data.token) {
+					setMessage("Logged in successfully!");
+					setAuthCtx(prevCtx => ({
+						...prevCtx,
+						user: res.data.email,
+						giveAwayPoints: res.data.giveAwayPoints,
+						giveAwayRolls: res.data.giveAwayRolls,
+						token: res.data.token
+					}));
+					return;
+				}
+				if (res && res.data && res.data.error && res.data.error.message) setMessage(res.data.error.message);
 			})
 			.catch(e => {
 				console.log(e.response.data);
@@ -84,7 +116,10 @@ function LoginForm() {
 							<Form.Control type="password" placeholder="Password" onChange={onPasswordChange} />
 						</Form.Group>
 						<Button variant="primary" type="button" onClick={onLoginClick}>
-							Submit
+							Login
+						</Button>
+						<Button variant="primary" type="button" className="register-button" onClick={onRegisterClick}>
+							Register
 						</Button>
 					</Form>
 				</div>

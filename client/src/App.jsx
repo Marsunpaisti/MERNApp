@@ -31,6 +31,7 @@ function App() {
 						}));
 					}
 					setIsAuthChecked(true);
+					console.log(res.headers);
 				})
 				.catch(e => {
 					console.log(e);
@@ -43,16 +44,16 @@ function App() {
 		 * Requests CSRF token from API
 		 */
 		const getCsrfToken = () => {
-			axios.get("/api/csrf/token").then(res => {
+			return axios.get("/api/csrf/token").then(res => {
 				axios.defaults.headers.post["XSRF-TOKEN"] = res.data;
 				setAuthCtx(prevCtx => ({ ...prevCtx, csrf: res.data }));
 				console.log("Set CSRF token to: " + res.data);
 				setIsCsrfToken(true);
+				console.log(res.headers);
 			});
 		};
 
-		getCsrfToken();
-		checkAuthStatus();
+		getCsrfToken().then(checkAuthStatus);
 	}, []);
 
 	// Auth check or CSRF retrieval in progress -> Render loading spinner

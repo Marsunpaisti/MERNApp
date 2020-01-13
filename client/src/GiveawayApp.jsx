@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Button } from "react-bootstrap";
 import axios from "axios";
 import AuthContext from "./contexts/AuthContext";
-import { useEffect } from "react";
+import "./sass/GiveawayApp.scss";
 import { RingLoader } from "react-spinners";
 
 /**
@@ -39,6 +39,18 @@ function GiveawayApp() {
 			});
 	};
 
+	const onLogoutClick = () => {
+		axios
+			.post("/api/users/logout")
+			.then(res => {
+				setAuthCtx({ user: null, token: null, giveAwayPoints: null, giveAwayScore: null });
+			})
+			.catch(e => {
+				if (e.response.data && e.response.data.error && e.response.data.error.message)
+					console.log(e.response.data.error.message);
+			});
+	};
+
 	/**
 	 * Renders either a loading spinner or a response message of request
 	 */
@@ -56,17 +68,43 @@ function GiveawayApp() {
 		}
 	};
 
+	/**
+	 * Renders giveaway button that is disabled/enabled depending on roll attempts left
+	 */
+	const giveawayButton = () => {
+		if (authCtx.giveAwayRolls <= 0) {
+			return (
+				<Button variant="primary" type="button" onClick={onGiveawayClick} disabled>
+					Roll!
+				</Button>
+			);
+		}
+		return (
+			<Button variant="primary" type="button" onClick={onGiveawayClick}>
+				Roll!
+			</Button>
+		);
+	};
+
 	return (
 		<>
 			<div id="giveaway-card" className="giveaway-card card">
-				<p>Logged in as {authCtx.user}!</p>
+				<div className="logout-container d-inline">
+					<p className="d-inline">Logged in as {authCtx.user}!</p>
+					<Button
+						variant="primary"
+						type="button"
+						className="btn btn-sm btn-danger d-inline float-right"
+						onClick={onLogoutClick}
+					>
+						Logout
+					</Button>
+				</div>
 				<br></br>
-				<p>Your score: {authCtx.giveAwayPoints}</p>
+				<h2>Your score: {authCtx.giveAwayPoints}</h2>
 				<br></br>
-				<p>Rolls left: {authCtx.giveAwayRolls}</p>
-				<Button variant="primary" type="button" onClick={onGiveawayClick}>
-					Roll!
-				</Button>
+				<h2>Rolls left: {authCtx.giveAwayRolls}</h2>
+				{giveawayButton()}
 			</div>
 			{loadSpinnerOrMessage()}
 		</>
