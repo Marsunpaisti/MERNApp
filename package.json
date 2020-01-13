@@ -6,7 +6,12 @@
 	"scripts": {
 		"server": "node server.js",
 		"start-client": "npm start --prefix client",
-		"launch": "concurrently \"npm run start-client\" \"npm run server\""
+		"launch": "concurrently \"npm run start-client\" \"npm run server\"",
+		"start": "node server.js",
+		"backend": "node server.js",
+		"client": "npm start --prefix client",
+		"dev": "concurrently \"npm run backend\" \"npm run client\"",
+		"heroku-postbuild": "npm install --prefix client && npm run build --prefix client"
 	},
 	"author": "",
 	"license": "ISC",
