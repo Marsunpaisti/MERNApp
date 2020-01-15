@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const uniqueValidator = require("mongoose-unique-validator");
 const validators = require("validator");
-const bcrypt = require("bcrypt-nodejs");
+const bcrypt = require("bcryptjs");
 const saltRounds = require("../config//default").saltRounds;
 
 const UserSchema = new Schema({
@@ -58,7 +58,7 @@ UserSchema.pre("save", function(next) {
 		if (err) return next(err);
 
 		// Use generated salt to hash password
-		bcrypt.hash(user.password, salt, null, function(err, hash) {
+		bcrypt.hash(user.password, salt, function(err, hash) {
 			if (err) return next(err);
 
 			// Overwrite the cleartext password with the hash
@@ -71,11 +71,8 @@ UserSchema.pre("save", function(next) {
 /** 
  Hashes and compares the given password to the users password in the database
  */
-UserSchema.methods.comparePassword = function(candidatePassword, callback) {
-	bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
-		if (err) return callback(err);
-		callback(null, isMatch);
-	});
+UserSchema.methods.comparePassword = async function(candidatePassword) {
+	return await bcrypt.compare(candidatePassword, this.password);
 };
 
 UserSchema.plugin(uniqueValidator);

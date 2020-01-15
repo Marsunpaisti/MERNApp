@@ -106,7 +106,7 @@ router.post("/delete/:id", auth.requireMinimumRole("admin"), (req, res) => {
 /** 
  Handles login POSTS and responds with the JWT cookie on success
  */
-router.post("/login", auth.rejectLoggedInUsers, (req, res) => {
+router.post("/login", auth.rejectLoggedInUsers, async (req, res) => {
 	let email = null;
 	let password = null;
 
@@ -114,50 +114,57 @@ router.post("/login", auth.rejectLoggedInUsers, (req, res) => {
 		email = req.body.email.toLowerCase();
 		password = req.body.password;
 	}
-	if (email && password) {
-		User.findOne({ email })
-			.then(user => {
-				if (!user) {
-					return res.status(403).json({
-						ok: false,
-						error: {
-							message: "User with that email does not exist.",
-							code: 403
-						}
-					});
-				}
-				user.comparePassword(password, (error, isCorrectPassword) => {
-					if (isCorrectPassword) {
-						let token = generateAuthorizationToken(user);
-						//Send cookie and set to max-age to 3 hours
-						res.setHeader("Set-Cookie", `token=${token};max-age=10800;path=/;HttpOnly`);
-						res.json({
-							ok: true,
-							token: token,
-							user: user.email,
-							giveAwayPoints: user.giveAwayPoints,
-							giveAwayRolls: user.giveAwayRolls
-						});
-					} else {
-						res.status(403).json({
-							ok: false,
-							error: {
-								message: "Incorrect password",
-								code: 403
-							}
-						});
-					}
-				});
-			})
-			.catch(err => {
-				res.json({ ok: false, error: err });
-			});
-	} else {
+
+	//Check that email and password were given
+	if (!email || !password) {
 		return res.status(400).json({
 			ok: false,
 			error: {
 				message: "Missing username or password",
 				code: 400
+			}
+		});
+	}
+
+	//Find user
+	let user = null;
+	try {
+		user = await User.findOne({ email });
+	} catch (err) {
+		res.json({ ok: false, error: err });
+	}
+
+	//Check if user was found
+	if (!user) {
+		return res.status(403).json({
+			ok: false,
+			error: {
+				message: "User with that email does not exist.",
+				code: 403
+			}
+		});
+	}
+
+	//Check password against hash
+	let isCorrectPassword = await user.comparePassword(password);
+
+	if (isCorrectPassword) {
+		let token = generateAuthorizationToken(user);
+		//Send cookie and set to max-age to 3 hours
+		res.setHeader("Set-Cookie", `token=${token};max-age=10800;path=/;HttpOnly`);
+		res.json({
+			ok: true,
+			token: token,
+			user: user.email,
+			giveAwayPoints: user.giveAwayPoints,
+			giveAwayRolls: user.giveAwayRolls
+		});
+	} else {
+		res.status(403).json({
+			ok: false,
+			error: {
+				message: "Incorrect password",
+				code: 403
 			}
 		});
 	}
