@@ -63,7 +63,7 @@ UserSchema.pre("save", function(next) {
 
 			// Overwrite the cleartext password with the hash
 			user.password = hash;
-			next();
+			return next();
 		});
 	});
 });

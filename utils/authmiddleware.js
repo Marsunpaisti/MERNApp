@@ -28,7 +28,7 @@ function tokenParser(req, res, next) {
 		req.session = secureData;
 	}
 
-	next();
+	return next();
 }
 
 /** 
@@ -112,7 +112,7 @@ function requireSession(req, res, next) {
 	}
 
 	req.session = secureData;
-	next();
+	return next();
 }
 
 const roles = Object.freeze({
