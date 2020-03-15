@@ -12,14 +12,14 @@ const Counter = require("./models/counter");
 const helmet = require("helmet");
 const csurf = require("csurf");
 const { tokenParser } = require("./utils/authmiddleware");
-const cors = require("cors");
+//const cors = require("cors");
 const app = express();
 
 //Read .env file
 dotenv.config();
 
 //Middlewares
-app.use(cors());
+//app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
